@@ -110,12 +110,13 @@ function App() {
       );
     } catch (err) {
       let errorMsg = 'Kamera konnte nicht gestartet werden';
-      if (err.message.includes('Permission')) {
+      const errMessage = err?.message || '';
+      if (errMessage.includes('Permission')) {
         errorMsg = 'Kamera-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.';
-      } else if (err.message.includes('NotFound')) {
+      } else if (errMessage.includes('NotFound')) {
         errorMsg = 'Keine Kamera gefunden';
-      } else {
-        errorMsg += ': ' + err.message;
+      } else if (errMessage) {
+        errorMsg += ': ' + errMessage;
       }
       setError(errorMsg);
       setScanning(false);
