@@ -49,12 +49,48 @@ function App() {
     }
   };
 
+  // Kamera-Berechtigung prüfen
+  const checkCameraPermission = async () => {
+    // Prüfe ob HTTPS (Kamera benötigt secure context)
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      return { granted: false, error: 'Kamera benötigt HTTPS-Verbindung' };
+    }
+    
+    // Prüfe ob Kamera-API verfügbar
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return { granted: false, error: 'Kamera wird von diesem Browser nicht unterstützt' };
+    }
+    
+    try {
+      // Berechtigung anfragen
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      // Stream sofort stoppen (wir wollten nur die Berechtigung)
+      stream.getTracks().forEach(track => track.stop());
+      return { granted: true };
+    } catch (err) {
+      if (err.name === 'NotAllowedError') {
+        return { granted: false, error: 'Kamera-Zugriff wurde verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.' };
+      } else if (err.name === 'NotFoundError') {
+        return { granted: false, error: 'Keine Kamera gefunden' };
+      }
+      return { granted: false, error: 'Kamera-Fehler: ' + err.message };
+    }
+  };
+
   // QR Scanner starten
   const startScanner = async () => {
-    setScanning(true);
     setError(null);
     setArtikel(null);
     setScanParams(null);
+    
+    // Erst Kamera-Berechtigung prüfen
+    const permission = await checkCameraPermission();
+    if (!permission.granted) {
+      setError(permission.error);
+      return;
+    }
+    
+    setScanning(true);
     
     // URL zurücksetzen
     window.history.replaceState({}, '', '/');
@@ -73,7 +109,15 @@ function App() {
         onScanError
       );
     } catch (err) {
-      setError('Kamera konnte nicht gestartet werden: ' + err.message);
+      let errorMsg = 'Kamera konnte nicht gestartet werden';
+      if (err.message.includes('Permission')) {
+        errorMsg = 'Kamera-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.';
+      } else if (err.message.includes('NotFound')) {
+        errorMsg = 'Keine Kamera gefunden';
+      } else {
+        errorMsg += ': ' + err.message;
+      }
+      setError(errorMsg);
       setScanning(false);
     }
   };
