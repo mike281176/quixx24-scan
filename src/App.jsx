@@ -8,6 +8,7 @@ import { getArtikelById, updateBestand } from './lib/supabase';
 
 function App() {
   const [scanning, setScanning] = useState(false);
+  const [scannerReady, setScannerReady] = useState(false);
   const [artikel, setArtikel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,6 +30,55 @@ function App() {
       loadArtikel(id);
     }
   }, []);
+
+  // Scanner starten wenn DOM bereit ist
+  useEffect(() => {
+    if (scannerReady && scanning) {
+      initScanner();
+    }
+  }, [scannerReady, scanning]);
+
+  // Scanner initialisieren (nachdem DOM gerendert wurde)
+  const initScanner = async () => {
+    try {
+      // Kurz warten damit DOM sicher gerendert ist
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const qrReaderElement = document.getElementById('qr-reader');
+      if (!qrReaderElement) {
+        setError('Scanner-Element nicht gefunden');
+        setScanning(false);
+        setScannerReady(false);
+        return;
+      }
+
+      html5QrCodeRef.current = new Html5Qrcode('qr-reader');
+      
+      await html5QrCodeRef.current.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1
+        },
+        onScanSuccess,
+        onScanError
+      );
+    } catch (err) {
+      let errorMsg = 'Kamera konnte nicht gestartet werden';
+      const errMessage = err?.message || '';
+      if (errMessage.includes('Permission') || errMessage.includes('permission')) {
+        errorMsg = 'Kamera-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.';
+      } else if (errMessage.includes('NotFound') || errMessage.includes('not found')) {
+        errorMsg = 'Keine Kamera gefunden';
+      } else if (errMessage) {
+        errorMsg += ': ' + errMessage;
+      }
+      setError(errorMsg);
+      setScanning(false);
+      setScannerReady(false);
+    }
+  };
 
   // Artikel laden
   const loadArtikel = async (id) => {
@@ -90,41 +140,18 @@ function App() {
       return;
     }
     
+    // Erst scanning aktivieren (rendert das DOM-Element)
     setScanning(true);
+    // Dann scannerReady setzen (triggert useEffect der Scanner startet)
+    setScannerReady(true);
     
     // URL zurücksetzen
     window.history.replaceState({}, '', '/');
-
-    try {
-      html5QrCodeRef.current = new Html5Qrcode('qr-reader');
-      
-      await html5QrCodeRef.current.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1
-        },
-        onScanSuccess,
-        onScanError
-      );
-    } catch (err) {
-      let errorMsg = 'Kamera konnte nicht gestartet werden';
-      const errMessage = err?.message || '';
-      if (errMessage.includes('Permission')) {
-        errorMsg = 'Kamera-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.';
-      } else if (errMessage.includes('NotFound')) {
-        errorMsg = 'Keine Kamera gefunden';
-      } else if (errMessage) {
-        errorMsg += ': ' + errMessage;
-      }
-      setError(errorMsg);
-      setScanning(false);
-    }
   };
 
   // Scanner stoppen
   const stopScanner = async () => {
+    setScannerReady(false);
     if (html5QrCodeRef.current) {
       try {
         await html5QrCodeRef.current.stop();
