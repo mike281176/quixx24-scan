@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Supabase Konfiguration - gleiche Datenbank wie app.quixx24.com
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yotevdjjomfwbsncwpwc.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdGV2ZGpqb21md2JzbmN3cHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM4NjY2MzAsImV4cCI6MjA0OTQ0MjYzMH0.qvLVMgayO0sLlYpSMXNnvBSRXcXG2SbvQqfNdxKqVsE';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdGV2ZGpqb21md2JzbmN3cHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNjQ1OTYsImV4cCI6MjA3OTY0MDU5Nn0.lGy5wHPJfnpgmKnE6YU6PqjqIdKfzLIrvmWTUoY1J8U';
 
 console.log('🔗 Supabase URL:', SUPABASE_URL);
 console.log('🔑 Supabase Key vorhanden:', !!SUPABASE_ANON_KEY);
