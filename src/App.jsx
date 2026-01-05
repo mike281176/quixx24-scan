@@ -326,8 +326,8 @@ function App() {
             <div className="flex items-start gap-4">
               {/* Bild oder Placeholder */}
               <div className="w-20 h-20 bg-slate-700 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {artikel.bild_url ? (
-                  <img src={artikel.bild_url} alt={artikel.bezeichnung} className="w-full h-full object-cover" />
+                {artikel.bild ? (
+                  <img src={artikel.bild} alt={artikel.name} className="w-full h-full object-cover" />
                 ) : (
                   <Package className="w-10 h-10 text-slate-500" />
                 )}
@@ -335,10 +335,10 @@ function App() {
               
               {/* Details */}
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-white truncate">{artikel.bezeichnung}</h2>
+                <h2 className="text-lg font-bold text-white truncate">{artikel.name}</h2>
                 <p className="text-teal-400 text-sm flex items-center gap-1">
                   <Tag className="w-3 h-3" />
-                  SKU: {artikel.sku}
+                  Art.-Nr.: {artikel.artikelnummer}
                 </p>
                 {scanParams?.loc && (
                   <p className="text-yellow-400 text-sm flex items-center gap-1 mt-1">

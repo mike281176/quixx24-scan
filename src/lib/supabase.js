@@ -9,13 +9,13 @@ console.log('🔑 Supabase Key vorhanden:', !!SUPABASE_ANON_KEY);
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Artikel nach ID laden
+// Artikel nach ID laden - verwendet lager_artikel Tabelle (wie app.quixx24.com)
 export async function getArtikelById(id) {
   console.log('📦 Lade Artikel mit ID:', id);
   
   const { data, error } = await supabase
-    .from('lagerverwaltung')
-    .select('*')
+    .from('lager_artikel')
+    .select('*, lager_lieferanten(name)')
     .eq('id', id)
     .single();
   
@@ -31,12 +31,12 @@ export async function getArtikelById(id) {
   return data;
 }
 
-// Artikel nach SKU laden
-export async function getArtikelBySKU(sku) {
+// Artikel nach Artikelnummer laden
+export async function getArtikelByArtikelnummer(artikelnummer) {
   const { data, error } = await supabase
-    .from('lagerverwaltung')
-    .select('*')
-    .eq('sku', sku)
+    .from('lager_artikel')
+    .select('*, lager_lieferanten(name)')
+    .eq('artikelnummer', artikelnummer)
     .single();
   
   if (error) {
@@ -49,7 +49,7 @@ export async function getArtikelBySKU(sku) {
 // Bestand aktualisieren
 export async function updateBestand(id, neuerBestand) {
   const { data, error } = await supabase
-    .from('lagerverwaltung')
+    .from('lager_artikel')
     .update({ 
       bestand: neuerBestand,
       letzte_aenderung: new Date().toISOString()
@@ -65,16 +65,17 @@ export async function updateBestand(id, neuerBestand) {
   return data;
 }
 
-// Lagerbewegung protokollieren (optional für zukünftige Erweiterungen)
-export async function logBewegung(artikelId, menge, typ, notiz = '') {
+// Lagertransaktion protokollieren
+export async function logBewegung(artikelId, menge, typ, notiz = '', userId = null) {
   const { error } = await supabase
-    .from('lagerbewegungen')
+    .from('lager_transaktionen')
     .insert({
       artikel_id: artikelId,
       menge: menge,
       typ: typ, // 'entnahme' oder 'zugang'
       notiz: notiz,
-      zeitpunkt: new Date().toISOString()
+      user_id: userId,
+      erstellt_am: new Date().toISOString()
     });
   
   if (error) {
