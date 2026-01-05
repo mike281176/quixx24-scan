@@ -4,7 +4,7 @@ import {
   ScanLine, Package, Plus, Minus, Check, X, RefreshCw, 
   MapPin, Tag, Warehouse, AlertTriangle, Info
 } from 'lucide-react';
-import { getArtikelById, updateBestand } from './lib/supabase';
+import { getArtikelById, getArtikelByArtikelnummer, updateBestand } from './lib/supabase';
 
 function App() {
   const [scanning, setScanning] = useState(false);
@@ -85,14 +85,27 @@ function App() {
     setLoading(true);
     setError(null);
     
+    console.log('🔍 Suche Artikel mit ID/Artikelnummer:', id);
+    
     try {
-      const data = await getArtikelById(id);
+      // Erst nach ID suchen
+      let data = await getArtikelById(id);
+      
+      // Falls nicht gefunden, nach Artikelnummer suchen
+      if (!data) {
+        console.log('📦 Nicht per ID gefunden, suche nach Artikelnummer...');
+        data = await getArtikelByArtikelnummer(id);
+      }
+      
       if (data) {
+        console.log('✅ Artikel geladen:', data);
         setArtikel(data);
       } else {
-        setError('Artikel nicht gefunden');
+        console.log('❌ Artikel nicht gefunden für:', id);
+        setError(`Artikel nicht gefunden (ID/Art.-Nr.: ${id})`);
       }
     } catch (err) {
+      console.error('💥 Fehler beim Laden:', err);
       setError('Fehler beim Laden: ' + err.message);
     } finally {
       setLoading(false);
