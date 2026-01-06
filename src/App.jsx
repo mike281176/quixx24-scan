@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { 
   ScanLine, Package, Plus, Minus, Check, X, RefreshCw, 
@@ -18,7 +18,7 @@ function App() {
   const scannerRef = useRef(null);
   const html5QrCodeRef = useRef(null);
 
-  // URL-Parameter beim Start prüfen
+  // URL-Parameter beim Start prÃ¼fen
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -85,7 +85,7 @@ function App() {
     setLoading(true);
     setError(null);
     
-    console.log('🔍 Suche Artikel mit ID/Artikelnummer:', id);
+    console.log('ðŸ” Suche Artikel mit ID/Artikelnummer:', id);
     
     try {
       // Erst nach ID suchen
@@ -93,35 +93,35 @@ function App() {
       
       // Falls nicht gefunden, nach Artikelnummer suchen
       if (!data) {
-        console.log('📦 Nicht per ID gefunden, suche nach Artikelnummer...');
+        console.log('ðŸ“¦ Nicht per ID gefunden, suche nach Artikelnummer...');
         data = await getArtikelByArtikelnummer(id);
       }
       
       if (data) {
-        console.log('✅ Artikel geladen:', data);
+        console.log('âœ… Artikel geladen:', data);
         setArtikel(data);
       } else {
-        console.log('❌ Artikel nicht gefunden für:', id);
+        console.log('âŒ Artikel nicht gefunden fÃ¼r:', id);
         setError(`Artikel nicht gefunden (ID/Art.-Nr.: ${id})`);
       }
     } catch (err) {
-      console.error('💥 Fehler beim Laden:', err);
+      console.error('ðŸ’¥ Fehler beim Laden:', err);
       setError('Fehler beim Laden: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Kamera-Berechtigung prüfen
+  // Kamera-Berechtigung prÃ¼fen
   const checkCameraPermission = async () => {
-    // Prüfe ob HTTPS (Kamera benötigt secure context)
+    // PrÃ¼fe ob HTTPS (Kamera benÃ¶tigt secure context)
     if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-      return { granted: false, error: 'Kamera benötigt HTTPS-Verbindung' };
+      return { granted: false, error: 'Kamera benÃ¶tigt HTTPS-Verbindung' };
     }
     
-    // Prüfe ob Kamera-API verfügbar
+    // PrÃ¼fe ob Kamera-API verfÃ¼gbar
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      return { granted: false, error: 'Kamera wird von diesem Browser nicht unterstützt' };
+      return { granted: false, error: 'Kamera wird von diesem Browser nicht unterstÃ¼tzt' };
     }
     
     try {
@@ -146,7 +146,7 @@ function App() {
     setArtikel(null);
     setScanParams(null);
     
-    // Erst Kamera-Berechtigung prüfen
+    // Erst Kamera-Berechtigung prÃ¼fen
     const permission = await checkCameraPermission();
     if (!permission.granted) {
       setError(permission.error);
@@ -158,7 +158,7 @@ function App() {
     // Dann scannerReady setzen (triggert useEffect der Scanner startet)
     setScannerReady(true);
     
-    // URL zurücksetzen
+    // URL zurÃ¼cksetzen
     window.history.replaceState({}, '', '/');
   };
 
@@ -192,7 +192,7 @@ function App() {
         window.history.replaceState({}, '', `?id=${id}&cat=${cat || ''}&loc=${loc || ''}`);
         await loadArtikel(id);
       } else {
-        setError('Ungültiger QR-Code: Keine Artikel-ID gefunden');
+        setError('UngÃ¼ltiger QR-Code: Keine Artikel-ID gefunden');
       }
     } catch {
       // Vielleicht ist es nur eine ID
@@ -200,7 +200,7 @@ function App() {
         setScanParams({ id: decodedText, cat: null, loc: null });
         await loadArtikel(decodedText);
       } else {
-        setError('Ungültiger QR-Code Format');
+        setError('UngÃ¼ltiger QR-Code Format');
       }
     }
   };
@@ -210,7 +210,7 @@ function App() {
     // Ignorieren - normal wenn kein QR-Code im Bild
   };
 
-  // Bestand ändern
+  // Bestand Ã¤ndern
   const handleBestandAendern = async (typ) => {
     if (!artikel) return;
     
@@ -219,14 +219,14 @@ function App() {
     setSuccess(null);
     
     const neuerBestand = typ === 'entnahme' 
-      ? Math.max(0, artikel.bestand - menge)
-      : artikel.bestand + menge;
+      ? Math.max(0, artikel.ist_bestand - menge)
+      : artikel.ist_bestand + menge;
     
     try {
       const updated = await updateBestand(artikel.id, neuerBestand);
       if (updated) {
         setArtikel(updated);
-        setSuccess(`Bestand ${typ === 'entnahme' ? 'reduziert' : 'erhöht'} auf ${neuerBestand}`);
+        setSuccess(`Bestand ${typ === 'entnahme' ? 'reduziert' : 'erhÃ¶ht'} auf ${neuerBestand}`);
         setMenge(1);
         
         // Erfolg nach 3 Sekunden ausblenden
@@ -367,15 +367,15 @@ function App() {
               <div className="flex items-center justify-between">
                 <span className="text-slate-400 text-sm">Aktueller Bestand:</span>
                 <span className={`text-2xl font-bold ${
-                  artikel.bestand <= (artikel.mindestbestand || 0) ? 'text-red-400' : 'text-green-400'
+                  artikel.ist_bestand <= (artikel.soll_bestand || 0) ? 'text-red-400' : 'text-green-400'
                 }`}>
-                  {artikel.bestand} {artikel.einheit || 'Stk'}
+                  {artikel.ist_bestand} {artikel.einheit || 'Stk'}
                 </span>
               </div>
-              {artikel.mindestbestand && artikel.bestand <= artikel.mindestbestand && (
+              {artikel.soll_bestand && artikel.ist_bestand <= artikel.soll_bestand && (
                 <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
-                  Unter Mindestbestand ({artikel.mindestbestand})
+                  Unter Mindestbestand ({artikel.soll_bestand})
                 </p>
               )}
             </div>
@@ -389,11 +389,11 @@ function App() {
             )}
           </div>
 
-          {/* Bestand Ändern */}
+          {/* Bestand Ã„ndern */}
           <div className="bg-slate-800/80 rounded-xl p-4 border border-teal-700/50">
             <h3 className="text-white font-medium mb-3 flex items-center gap-2">
               <Info className="w-4 h-4 text-teal-400" />
-              Bestand ändern
+              Bestand Ã¤ndern
             </h3>
 
             {/* Menge Eingabe */}
@@ -441,7 +441,7 @@ function App() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleBestandAendern('entnahme')}
-                disabled={loading || artikel.bestand < menge}
+                disabled={loading || artikel.ist_bestand < menge}
                 className="bg-red-600 hover:bg-red-500 disabled:bg-slate-600 disabled:cursor-not-allowed
                            text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
               >
@@ -483,3 +483,4 @@ function App() {
 }
 
 export default App;
+
