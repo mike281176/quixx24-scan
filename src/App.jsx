@@ -405,10 +405,8 @@ function App() {
                 <Minus className="w-5 h-5" />
               </button>
               
-              <input
-                type="number"
-                value={menge}
-                onChange={(e) => setMenge(Math.max(1, parseInt(e.target.value) || 1))}
+              <input type="text" inputMode="numeric" pattern="[0-9]*" value={menge}
+                onChange={(e) => setMenge(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                 className="w-24 h-12 bg-slate-900 border border-teal-600 rounded-lg text-center text-2xl font-bold text-white"
               />
               
@@ -441,7 +439,7 @@ function App() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleBestandAendern('entnahme')}
-                disabled={loading || artikel.ist_bestand < menge}
+                disabled={loading || !menge || menge <= 0 || artikel.ist_bestand < menge}
                 className="bg-red-600 hover:bg-red-500 disabled:bg-slate-600 disabled:cursor-not-allowed
                            text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
               >
@@ -451,7 +449,7 @@ function App() {
               
               <button
                 onClick={() => handleBestandAendern('zugang')}
-                disabled={loading}
+                disabled={loading || !menge || menge <= 0}
                 className="bg-green-600 hover:bg-green-500 disabled:bg-slate-600 disabled:cursor-not-allowed
                            text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
               >
@@ -483,4 +481,7 @@ function App() {
 }
 
 export default App;
+
+
+
 
