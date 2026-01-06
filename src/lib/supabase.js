@@ -1,18 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+﻿import { createClient } from '@supabase/supabase-js';
 
-// Supabase Konfiguration - gleiche Datenbank wie app.quixx24.com
-// Aktualisiert: 2026-01-05 22:00
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yotevdjjomfwbsncwpwc.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdGV2ZGpqb21md2JzbmN3cHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNjQ1OTYsImV4cCI6MjA3OTY0MDU5Nn0.lGy5wHPJfnpgmKnE6YU6PqjqIdKfzLIrvmWTUoY1J8U';
+// Supabase Konfiguration - DIREKTE WERTE (nicht Environment Variables!)
+// Die Scanner-App verwendet die gleiche Datenbank wie app.quixx24.com
+const SUPABASE_URL = 'https://yotevdjjomfwbsncwpwc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdGV2ZGpqb21md2JzbmN3cHdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNjQ1OTYsImV4cCI6MjA3OTY0MDU5Nn0.lGy5wHPJfnpgmKnE6YU6PqjqIdKfzLIrvmWTUoY1J8U';
 
-console.log('🔗 Supabase URL:', SUPABASE_URL);
-console.log('🔑 Supabase Key:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
+console.log('Supabase URL:', SUPABASE_URL);
+console.log('Supabase Key:', SUPABASE_ANON_KEY.substring(0, 30) + '...');
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Artikel nach ID laden - verwendet lager_artikel Tabelle (wie app.quixx24.com)
+// Artikel nach ID laden
 export async function getArtikelById(id) {
-  console.log('📦 Lade Artikel mit ID:', id);
+  console.log('Lade Artikel mit ID:', id);
   
   const { data, error } = await supabase
     .from('lager_artikel')
@@ -21,19 +21,20 @@ export async function getArtikelById(id) {
     .single();
   
   if (error) {
-    console.error('❌ Fehler beim Laden des Artikels:', error);
+    console.error('Fehler beim Laden des Artikels:', error);
     console.error('Error Code:', error.code);
     console.error('Error Message:', error.message);
-    console.error('Error Details:', error.details);
     return null;
   }
   
-  console.log('✅ Artikel gefunden:', data);
+  console.log('Artikel gefunden:', data);
   return data;
 }
 
 // Artikel nach Artikelnummer laden
 export async function getArtikelByArtikelnummer(artikelnummer) {
+  console.log('Suche nach Artikelnummer:', artikelnummer);
+  
   const { data, error } = await supabase
     .from('lager_artikel')
     .select('*, lager_lieferanten(name)')
@@ -41,7 +42,7 @@ export async function getArtikelByArtikelnummer(artikelnummer) {
     .single();
   
   if (error) {
-    console.error('Fehler beim Laden des Artikels:', error);
+    console.error('Fehler bei Artikelnummer-Suche:', error);
     return null;
   }
   return data;
@@ -64,22 +65,4 @@ export async function updateBestand(id, neuerBestand) {
     return null;
   }
   return data;
-}
-
-// Lagertransaktion protokollieren
-export async function logBewegung(artikelId, menge, typ, notiz = '', userId = null) {
-  const { error } = await supabase
-    .from('lager_transaktionen')
-    .insert({
-      artikel_id: artikelId,
-      menge: menge,
-      typ: typ, // 'entnahme' oder 'zugang'
-      notiz: notiz,
-      user_id: userId,
-      erstellt_am: new Date().toISOString()
-    });
-  
-  if (error) {
-    console.error('Fehler beim Protokollieren:', error);
-  }
 }
